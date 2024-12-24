@@ -10,7 +10,7 @@ const path = require('path');
 
 // Dropbox API configuration
 const DROPBOX_TOKEN = process.env.DROPBOX_TOKEN;
-const DROPBOX_FOLDER = '/shorts';
+const DROPBOX_FOLDER = '/Riddles Shorts';
 const LOCAL_FOLDER = 'downloads';
 
 // YouTube API configuration
