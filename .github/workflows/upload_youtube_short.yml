@@ -1,0 +1,30 @@
+name: Upload YouTube Shorts
+
+on:
+  schedule:
+    # Runs every 12 hours
+    - cron: "0 */12 * * *"
+
+jobs:
+  upload-video:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v3
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: 18
+
+    - name: Install Dependencies
+      run: npm install
+
+    - name: Run Upload Script
+      env:
+        DROPBOX_TOKEN: ${{ secrets.DROPBOX_TOKEN }}
+        YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
+        YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
+        YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
+      run: node youtube_dropbox_upload.js
