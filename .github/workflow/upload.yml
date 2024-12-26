@@ -1,0 +1,42 @@
+name: Auto Upload and Push
+
+on:
+  schedule:
+    - cron: '0 0 * * *'   # Trigger once every day at midnight UTC
+  push:
+    branches:
+      - main  # Trigger on push to the 'main' branch
+
+jobs:
+  fetch_and_upload:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install dropbox google-auth google-auth-oauthlib google-api-python-client
+
+      - name: Fetch latest file from Dropbox
+        run: |
+          python dropbox_fetch.py "Riddles Shorts" "local_folder"
+
+      - name: Upload video to YouTube
+        run: |
+          python youtube_upload.py "local_folder/latest_video.mp4" "Title of Your Video" "Description of Your Video"
+
+      - name: Commit and Push changes (if any)
+        run: |
+          git add .
+          git commit -m "Automated commit for video upload"
+          git push https://github.com/${{ secrets.GH_TOKEN }}@github.com/${{ github.repository }} HEAD:main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
