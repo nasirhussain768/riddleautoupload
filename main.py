@@ -5,17 +5,13 @@ import googleapiclient.discovery
 import googleapiclient.errors
 import dropbox
 import datetime
-from dotenv import load_dotenv
-
-# Load environment variables from .env file
-load_dotenv()
 
 # YouTube API Scopes
 SCOPES = ["https://www.googleapis.com/auth/youtube.upload"]
 
-# File paths from environment variables
-CLIENT_SECRETS_FILE = os.getenv("CLIENT_SECRETS_FILE")
-DROPBOX_ACCESS_TOKEN = os.getenv("DROPBOX_ACCESS_TOKEN")
+# Fetch credentials from environment variables (GitHub Secrets)
+CLIENT_SECRETS_FILE = os.getenv("CLIENT_SECRETS_FILE_PATH")  # Path to the JSON file containing the client secrets.
+DROPBOX_ACCESS_TOKEN = os.getenv("DROPBOX_ACCESS_TOKEN")  # Dropbox token stored as a secret
 DROPBOX_FOLDER = "/Riddles Shorts"
 LOCAL_FOLDER = "./downloads"
 
