@@ -1,10 +1,10 @@
 import os
 import json
 import dropbox
-from google.oauth2 import service_account
+import google_auth_oauthlib.flow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
-import googleapiclient.http
+import pickle
 
 # Get the YouTube credentials JSON from environment variables
 YOUTUBE_CREDENTIALS_JSON = os.environ.get('YOUTUBE_CREDENTIALS_JSON')
@@ -23,14 +23,26 @@ if not DROPBOX_ACCESS_TOKEN:
 
 dbx = dropbox.Dropbox(DROPBOX_ACCESS_TOKEN)
 
-# Setup YouTube API client using Service Account
+# Setup YouTube API client
 def get_youtube_service():
     credentials = None
-    # Use service account credentials
-    credentials = service_account.Credentials.from_service_account_info(
-        credentials_dict, 
-        scopes=["https://www.googleapis.com/auth/youtube.upload"]
-    )
+    # You can use the pickle method to cache credentials
+    if os.path.exists('token.pickle'):
+        with open('token.pickle', 'rb') as token:
+            credentials = pickle.load(token)
+
+    if not credentials or not credentials.valid:
+        if credentials and credentials.expired and credentials.refresh_token:
+            credentials.refresh(Request())
+        else:
+            flow = google_auth_oauthlib.flow.InstalledAppFlow.from_client_config(
+                credentials_dict, ['https://www.googleapis.com/auth/youtube.upload']
+            )
+            credentials = flow.run_local_server(port=0)
+        # Save credentials for the next run
+        with open('token.pickle', 'wb') as token:
+            pickle.dump(credentials, token)
+    
     youtube = build('youtube', 'v3', credentials=credentials)
     return youtube
 
@@ -59,16 +71,18 @@ def upload_video_to_youtube(video_file_path, title, description):
 def fetch_next_video_from_dropbox():
     result = dbx.files_list_folder('/Riddles Shorts').entries
     video_file = result[0]  # assuming you want to upload the first video
-    video_path = '/path/to/video/file'  # Example: Download the video or use its path
-    # Download the video if needed (you can customize this part as needed)
+    video_path = '/tmp/video.mp4'  # Use a valid path like /tmp/video.mp4 for temporary storage
+
+    # Download the video
     with open(video_path, "wb") as f:
         metadata, res = dbx.files_download(path=video_file.path_lower)
         f.write(res.content)
+        
     return video_path
 
 # Main execution to upload videos
 def main():
-    video_file_path = fetch_next_video_from_dropbox()
+    video_file_path = fetch_next_video_from_dropbox()  # Fetch the next video
     upload_video_to_youtube(video_file_path, "Riddle Short", "Description of the riddle short.")
 
 if __name__ == '__main__':
