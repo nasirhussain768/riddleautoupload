@@ -11,8 +11,13 @@ import dropbox
 load_dotenv()
 
 # Load credentials from .env
-youtube_credentials_json = os.getenv("YOUTUBE_CREDENTIALS")
+youtube_credentials_json = os.getenv("YOUTUBE_CREDENTIALS_JSON")
+
+credentials_dict = json.loads(YOUTUBE_CREDENTIALS_JSON)
+
 dropbox_access_token = os.getenv("DROPBOX_ACCESS_TOKEN")
+
+dbx = dropbox.Dropbox(DROPBOX_ACCESS_TOKEN)
 
 if not youtube_credentials_json or not dropbox_access_token:
     raise ValueError("Missing YouTube or Dropbox credentials in .env file.")
